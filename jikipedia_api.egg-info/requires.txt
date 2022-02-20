@@ -1,5 +1,1 @@
-psutil
-bilibili_api
 requests
-asyncio
-datetime

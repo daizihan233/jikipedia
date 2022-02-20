@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
 Name: jikipedia-api
-Version: 0.0.1rc0
+Version: 0.0.2rc0
 Summary: 小鸡词典API
-Home-page: https://gitee.com/han-tools/han-lib
+Home-page: https://github.com/daizihan233/jikipedia-api
 Author: HanTools
 Author-email: hantools@foxmail.com
 License: UNKNOWN
@@ -33,6 +33,8 @@ License-File: LICENSE
 - [ ] 个人信息
 - [ ] 关注（者）
 - [ ] 粉丝（者）
+- [ ] 词条内容
+- [ ] 词条编写者
 #### 创作类
 - [ ] 词条
 - [ ] 杂谈
@@ -47,4 +49,26 @@ pip install jikipedia-api
 ```
 from jikipedia-api import Jikipedia
 ```
+如果出现ImportError，请检查是否安装了requests、json、execjs。
+#### 初始化
+```
+jikipedia = Jikipedia(phone=12345678901, password='123456')
+```
+phone 是 11 位手机号，password 是 密码。
+#### 生成明文XID
+```
+xid = jikipedia.generate_plaintext_xid()
+```
+xid 为 str 类型，可以直接使用。
+#### Token获取
+```
+token = jikipedia.get_token()
+```
+token 为 str 类型，可以直接使用。
+#### 恶魔鸡翻译器
+```
+jikipedia.emoji('你好')
+```
+参数必须为 str 类型，返回值为 str 类型，即翻译之后的内容。
+
 

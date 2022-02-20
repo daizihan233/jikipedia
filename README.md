@@ -1,6 +1,9 @@
 ## **_jikipedia-api_**
+注意：该项目还在开发完善中，有Bug欢迎反馈
 ### 相关页面导航栏
-[小鸡词典](https://jikipedia.com/)
+[小鸡词典 Jikipedia](https://jikipedia.com/) <br>
+[作者主页 @Bug鸡](https://jikipedia.com/definitions/user/281250396) <br>
+[Github项目]()
 ### 做了些什么？
 #### 互动类
 - [ ] 签到
