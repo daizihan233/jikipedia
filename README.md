@@ -1,4 +1,4 @@
-## **_jikipedia-api_**
+## **_jikipedia_**
 注意：该项目还在开发完善中，有Bug欢迎反馈
 ### 相关页面导航栏
 [小鸡词典 Jikipedia](https://jikipedia.com/) <br>
@@ -23,6 +23,7 @@
 - [ ] 粉丝（者）
 - [ ] 词条内容
 - [ ] 词条编写者
+- [x] 搜索栏的推荐
 #### 创作类
 - [ ] 词条
 - [ ] 杂谈
@@ -35,26 +36,36 @@ pip install jikipedia-api
 ```
 #### import
 ```
-from jikipedia-api import Jikipedia
+from jikipedia import Jikipedia
 ```
-如果出现ImportError，请检查是否安装了requests、json、execjs。
+如果出现ImportError，请检查是否安装了requests、json、re。
 #### 初始化
 ```
-jikipedia = Jikipedia(phone=12345678901, password='123456')
+jiki = Jikipedia(phone=12345678901, password='123456')
 ```
 phone 是 11 位手机号，password 是 密码。
 #### 生成明文XID
 ```
-xid = jikipedia.generate_plaintext_xid()
+xid = jiki.generate_plaintext_xid()
 ```
 xid 为 str 类型，可以直接使用。
 #### Token获取
 ```
-token = jikipedia.get_token()
+token = jiki.get_token()
 ```
 token 为 str 类型，可以直接使用。
 #### 恶魔鸡翻译器
 ```
-jikipedia.emoji('你好')
+jiki.emoji('你好')
 ```
 参数必须为 str 类型，返回值为 str 类型，即翻译之后的内容。
+#### 搜索栏的推荐
+```
+jiki.get_search_recommend()
+```
+返回值为 dict 类型，即搜索栏的推荐。<br>
+
+| Key（键）      | 类型  | 释义       |
+|-------------|-----|----------|
+| phrase      | str | 词条名称     |
+| placeholder | str | 搜索栏现实的文案 |   
