@@ -1,0 +1,50 @@
+Metadata-Version: 2.1
+Name: jikipedia-api
+Version: 0.0.1rc0
+Summary: 小鸡词典API
+Home-page: https://gitee.com/han-tools/han-lib
+Author: HanTools
+Author-email: hantools@foxmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+## **_jikipedia-api_**
+### 相关页面导航栏
+[小鸡词典](https://jikipedia.com/)
+### 做了些什么？
+#### 互动类
+- [ ] 签到
+- [ ] 收藏
+- [ ] 点赞
+- [ ] 评论
+- [ ] 关注
+#### 数据类
+- [x] 生成XID
+- [ ] 获取XID
+- [ ] 加密XID
+- [ ] 解密XID
+- [x] Token获取
+- [ ] 被阅读、点赞的数据
+- [ ] 个人信息
+- [ ] 关注（者）
+- [ ] 粉丝（者）
+#### 创作类
+- [ ] 词条
+- [ ] 杂谈
+#### 活动类
+- [x] 恶魔鸡翻译器
+### 食用教程
+#### 安装
+```
+pip install jikipedia-api
+```
+#### import
+```
+from jikipedia-api import Jikipedia
+```
+

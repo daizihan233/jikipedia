@@ -1,0 +1,9 @@
+LICENSE
+README.md
+setup.py
+jikipedia-api/__init__.py
+jikipedia_api.egg-info/PKG-INFO
+jikipedia_api.egg-info/SOURCES.txt
+jikipedia_api.egg-info/dependency_links.txt
+jikipedia_api.egg-info/requires.txt
+jikipedia_api.egg-info/top_level.txt
