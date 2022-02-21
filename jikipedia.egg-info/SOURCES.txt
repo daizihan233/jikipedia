@@ -1,7 +1,7 @@
 LICENSE
 README.md
 setup.py
-jikipedia-api/__init__.py
+jikipedia/__init__.py
 jikipedia.egg-info/PKG-INFO
 jikipedia.egg-info/SOURCES.txt
 jikipedia.egg-info/dependency_links.txt
