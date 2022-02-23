@@ -167,4 +167,23 @@ class Jikipedia:
 
         return json.loads(r.text)['first']
 
-
+    # 调用 活动-我们的维权API
+    def gather_event_hope(self, count=2000):
+        payload = {
+            "event": "weibo",
+            "count": count
+        }
+        headers = {
+            'Connection': 'close',
+            'XID': self.encode_xid(),
+            'Content-Type': 'application/json;charset=utf-8',
+            'Token': self.get_token()
+        }
+        tmp_json = requests.post('https://api.jikipedia.com/go/gather_event_hope', headers=headers,
+                                 data=json.dumps(payload)).text
+        tmp_json = json.loads(tmp_json)
+        try:
+            tmp_new_count = tmp_json['count']
+            return tmp_new_count
+        except ValueError:
+            return 0

@@ -2,7 +2,6 @@ import random
 
 import requests
 import json
-import execjs
 import base64
 
 
@@ -13,23 +12,6 @@ class Jikipedia:
         self.password = password
         if len(phone) != 11:
             raise ValueError('手机号码长度不正确')
-
-    # 生成 明文XID（备用，基于JavaScript）
-    def generate_plaintext_xid_backup(self):
-        if execjs.get().name == 'JScript':
-            raise RuntimeError('请使用nodejs作为JS框架')
-        js = """
-        function get_xid() {
-            const xid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,
-            (function (name) {
-              let randomInt = 16 * Math.random() | 0;
-              return ("x" === name ? randomInt : 3 & randomInt | 8).toString(16)
-            }));
-            return xid;
-        }
-        """
-        xid = execjs.compile(js)
-        return xid.call('get_xid')
 
     # 生成 明文XID（纯Python实现）
     def generate_plaintext_xid(self):
@@ -167,4 +149,23 @@ class Jikipedia:
 
         return json.loads(r.text)['first']
 
-
+    # 调用 活动-我们的维权API
+    def gather_event_hope(self, count=2000):
+        payload = {
+            "event": "weibo",
+            "count": count
+        }
+        headers = {
+            'Connection': 'close',
+            'XID': self.encode_xid(),
+            'Content-Type': 'application/json;charset=utf-8',
+            'Token': self.get_token()
+        }
+        tmp_json = requests.post('https://api.jikipedia.com/go/gather_event_hope', headers=headers,
+                                 data=json.dumps(payload)).text
+        tmp_json = json.loads(tmp_json)
+        try:
+            tmp_new_count = tmp_json['count']
+            return tmp_new_count
+        except ValueError:
+            return 0
