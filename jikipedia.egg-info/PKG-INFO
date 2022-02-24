@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: jikipedia
-Version: 0.2.10rc0
+Version: 0.2.11rc0
 Summary: 小鸡词典API
 Home-page: https://github.com/daizihan233/jikipedia
 Author: HanTools
@@ -215,6 +215,7 @@ jiki.gather_event_hope(1024)
 | 参数名称  | 参数类型 | 参数释义                        |
 |-------|------|-----------------------------|
 | count | int  | 要刷多少，可选，不填默认2000（实际可能是1024） |
+
 **注意：实测上限在1024左右，但超过1024不会报错，建议填写区间为1-2000以内的整数**
 
 返回：<br>
