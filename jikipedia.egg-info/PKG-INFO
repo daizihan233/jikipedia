@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: jikipedia
-Version: 0.2.8rc0
+Version: 0.2.10rc0
 Summary: 小鸡词典API
 Home-page: https://github.com/daizihan233/jikipedia
 Author: HanTools
@@ -50,7 +50,7 @@ License-File: LICENSE
 - [ ] 创建杂谈
 #### 活动类
 - [x] 恶魔鸡翻译器
-- [ ] 我们的维权
+- [x] 我们的维权
 ### 食用教程
 #### 安装
 ```
@@ -127,6 +127,7 @@ token = jiki.get_token()
 | 返回值名称 | 返回值类型 | 可能的值 | 返回值释义    |
 |-------|-------|------|----------|
 | token | str   | -    | 获取的Token |
+
 **注意：如果在异地（比如服务器上）挂脚本的话，那么你的机子上登录信息可能会失效**<br>
 <br>
 **解决方法1：服务器也是会累的，把频率调低，让服务器休息一会儿吧！**
@@ -199,6 +200,7 @@ jiki.sign()
 | -    | -    | -    |
 
 返回：<br>
+
 
 | 返回值名称 | 返回值类型 | 可能的值       | 返回值释义            |
 |-------|-------|------------|------------------|
