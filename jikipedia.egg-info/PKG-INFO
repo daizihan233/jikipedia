@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: jikipedia
-Version: 0.2.12rc0
+Version: 0.2.13rc0
 Summary: 小鸡词典API
 Home-page: https://github.com/daizihan233/jikipedia
 Author: HanTools
@@ -14,7 +14,7 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 
 ## **_jikipedia_**
-### <center>“查网络流行语，就上小鸡词典！” &nbsp;——小鸡词典</center>
+### “查网络流行语，就上小鸡词典！” &nbsp;——小鸡词典
 注意：该项目还在开发完善中，有Bug欢迎反馈<br>
 注意：请一定要保持更新，否则会导致某些功能失效
 ### 相关页面导航栏
@@ -56,7 +56,7 @@ License-File: LICENSE
 ### 食用教程
 #### 安装
 ```
-pip install jikipedia==0.2.8rc0
+pip install jikipedia
 ```
 ****
 #### import
