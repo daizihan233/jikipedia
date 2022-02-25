@@ -169,3 +169,16 @@ class Jikipedia:
             return tmp_new_count
         except ValueError:
             return 0
+
+    # 进行 补签
+    def ssign(self, year, month, day):
+        headers = {
+            'Token': self.get_token(),
+            'XID': self.encode_xid(),
+            'Content-Type': 'application/json;charset=UTF-8'
+        }
+        data = {
+            'date': '{}-{}-{}'.format(year, month, day)
+        }
+        r = requests.post('https://api.jikipedia.com/wiki/new_check_in', headers=headers, data=json.dumps(data))
+        return r.status_code

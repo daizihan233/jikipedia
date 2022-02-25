@@ -1,16 +1,18 @@
 ## **_jikipedia_**
+### <center>“查网络流行语，就上小鸡词典！” &nbsp;——小鸡词典</center>
 注意：该项目还在开发完善中，有Bug欢迎反馈<br>
 注意：请一定要保持更新，否则会导致某些功能失效
 ### 相关页面导航栏
 [小鸡词典 Jikipedia](https://jikipedia.com/) <br>
 [作者主页 @Bug鸡](https://jikipedia.com/definitions/user/281250396) <br>
 [协助开发 @三滑稽甲苯](https://jikipedia.com/definitions/user/824221130) <br>
-[Github项目](https://github.com/daizihan233/jikipedia)
+[Github项目](https://github.com/daizihan233/jikipedia) <br>
+[其原理分析](https://github.com/daizihan233/jiki-yljj)
 
 ### 做了些什么？
 #### 互动类
 - [x] 签到
-- [ ] 补签
+- [x] 补签
 - [ ] 收藏
 - [ ] 新建收藏夹
 - [x] 点赞 / 取消点赞
@@ -208,3 +210,21 @@ jiki.gather_event_hope(1024)
 | 返回值名称 | 返回值类型 | 可能的值 | 返回值释义                                     |
 |-------|-------|------|-------------------------------------------|
 | count | int   | -    | 所有人一共刷了多少，如果返回值为0则代表超出上上限，要等一会再来（大概2-4小时） |
+****
+#### 补签
+```
+jiki.ssign(2022, 2, 22)
+```
+参数：<br>
+
+| 参数名称  | 参数类型 | 参数释义 |
+|-------|------|------|
+| year  | int  | 哪一年？ |
+| mouth | int  | 哪一月？ |
+| day   | int  | 哪一天？ |
+
+返回：<br>
+
+| 返回值名称   | 返回值类型 | 可能的值            | 返回值释义      |
+|---------|-------|-----------------|------------|
+| HTTP状态码 | int   | 200（成功）/403（失败） | 返回的HTTP状态码 |
