@@ -7,16 +7,16 @@
 [作者主页 @Bug鸡](https://jikipedia.com/definitions/user/281250396) <br>
 [协助开发 @三滑稽甲苯](https://jikipedia.com/definitions/user/824221130) <br>
 [Github项目](https://github.com/daizihan233/jikipedia) <br>
-[其原理分析](https://github.com/daizihan233/jiki-yljj)
+[原理分析](https://github.com/daizihan233/jiki-yljj) <br>
+[闲着蛋疼做的网站 www.hantools.top](https://www.hantools.top/) <br>
 
 ### 做了些什么？
 #### 互动类
 - [x] 签到
 - [x] 补签
 - [ ] 收藏
-- [ ] 新建收藏夹
 - [x] 点赞 / 取消点赞
-- [ ] 评论 / 回复
+- [x] 评论 / 回复
 - [ ] 关注 / 取消关注
 #### 数据类
 - [x] 生成XID
@@ -86,6 +86,7 @@ xid = jiki.generate_plaintext_xid()
 #### 生成密文XID
 ```
 xid = jiki.encode_xid()
+xid = jiki.encode_xid(xid)
 ```
 参数：<br>
 
@@ -125,7 +126,7 @@ token = jiki.get_token()
 ****
 #### 恶魔鸡翻译器
 ```
-jiki.emoji('你好')
+jiki.emoji(text)
 ```
 参数：<br>
 
@@ -151,21 +152,21 @@ jiki.get_search_recommend()
 
 返回：<br>
 
-| 参数名称        | 参数类型 | 参数释义               |
-|-------------|------|--------------------|
-| phrase      | str  | 搜索栏在被点击时显示的的文案     |
-| placeholder | str  | 搜索栏在没有点击时显示的的文案    |
+| 参数名称        | 参数类型 | 参数释义            |
+|-------------|------|-----------------|
+| phrase      | str  | 词条名             |
+| placeholder | str  | 搜索栏在没有点击时显示的的文案 |
 ****
 #### 点赞 / 取消点赞
 ```
-jiki.like(id, True)
+jiki.like(id, status)
 ```
 参数：<br>
 
-| 参数名称 | 参数类型 | 参数释义                       |
-|------|------|----------------------------|
-| id   | int  | 词条id                       |
-| 状态   | bool | True为点赞，False为取消，可选，不填默认点赞 |
+| 参数名称   | 参数类型 | 参数释义                       |
+|--------|------|----------------------------|
+| id     | int  | 词条id                       |
+| status | bool | True为点赞，False为取消，可选，不填默认点赞 |
 
 返回：<br>
 
@@ -189,13 +190,13 @@ jiki.sign()
 返回：<br>
 
 
-| 返回值名称 | 返回值类型 | 可能的值       | 返回值释义            |
-|-------|-------|------------|------------------|
-| 状态    | bool  | True/False | True为成功，False为失败 |
+| 返回值名称  | 返回值类型 | 可能的值       | 返回值释义            |
+|--------|-------|------------|------------------|
+| status | bool  | True/False | True为成功，False为失败 |
 ****
 #### 我们的维权
 ```
-jiki.gather_event_hope(1024)
+jiki.gather_event_hope(count)
 ```
 参数：<br>
 
@@ -213,7 +214,7 @@ jiki.gather_event_hope(1024)
 ****
 #### 补签
 ```
-jiki.ssign(2022, 2, 22)
+jiki.ssign(year, mouth, day)
 ```
 参数：<br>
 
@@ -228,3 +229,22 @@ jiki.ssign(2022, 2, 22)
 | 返回值名称   | 返回值类型 | 可能的值            | 返回值释义      |
 |---------|-------|-----------------|------------|
 | HTTP状态码 | int   | 200（成功）/403（失败） | 返回的HTTP状态码 |
+****
+#### 评论 / 回复
+```
+jiki.comment(definition, )
+```
+参数：<br>
+
+| 参数名称       | 参数类型 | 参数释义       |
+|------------|------|------------|
+| definition | int  | 词条id       |
+| text       | str  | 评论内容       |
+| reply      | int  | 选填，回复评论的id |
+
+返回：<br>
+
+| 返回值名称      | 返回值类型 | 可能的值 | 返回值释义          |
+|------------|-------|------|----------------|
+| API返回的json | dict  | -    | 可以自己研究，有时间就写文档 |
+****
