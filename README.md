@@ -270,7 +270,7 @@ import time
 import jikipedia
 from win10toast import ToastNotifier
 # 初始化
-jiki = jikipedia.Jikipedia(phone='12345678910', password='password')  # 这里替换成你的手机号和密码
+jiki = jikipedia.Jikipedia(phone='13357726438', password='hantools233')  # 这里替换成你的手机号和密码
 count_old = count = jiki.jk()  # 初始化计数器
 print('Init: ')  # 输出调试信息
 print('count =', count)  # 输出调试信息
@@ -283,9 +283,9 @@ while True:  # 死循环
     print('count =', count)  # 输出调试信息
     if count != count_old:  # 如果当前数量不等于上一次检测的数量
         print('count({}) != count_old({})'.format(count, count_old))  # 输出调试信息
-        count_old = count  # 更新上一次检测的数量
         toaster.show_toast('Jikipedia - 黄狗JK任务监视器', 'Now: {}\n'
                                                     'Old: {}'.format(count, count_old), duration=10)  # 显示消息提示器
+        count_old = count  # 更新上一次检测的数量
     time.sleep(600)  # 每10分钟（600秒）检测一次，秒为单位，建议把数字调高，否则会经常登录失效
 
 ```
