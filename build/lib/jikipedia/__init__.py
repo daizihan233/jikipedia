@@ -1,5 +1,4 @@
 import random
-
 import requests
 import json
 import base64
@@ -14,7 +13,7 @@ class Jikipedia:
             raise ValueError('手机号码长度不正确')
 
     # 生成 明文XID（纯Python实现）
-    def generate_plaintext_xid(self):
+    def generate_plaintext_xid(self) -> str:
         xid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
         xid = [str(x) for x in xid[::-1]]
         for s in range(len(xid)):
@@ -27,14 +26,14 @@ class Jikipedia:
         return ''.join(xid)[::-1]
 
     # 加密 明文XID
-    def encode_xid(self, xid=None):
+    def encode_xid(self, xid=None) -> str:
         if xid is None:
             xid = self.generate_plaintext_xid()
         xid = base64.encodebytes(("jikipedia_xid_" + xid).encode('utf-8'))
         return str(xid.decode('utf-8')).strip('\n')
 
     # 模拟登录获取更多信息
-    def login(self):
+    def login(self) -> dict:
         data = {
             'password': self.password,
             'phone': self.phone
@@ -68,17 +67,17 @@ class Jikipedia:
         return json.loads(r.text)
 
     # 获取 Token
-    def get_token(self):
+    def get_token(self) -> str:
         return self.login()['token']
 
     # 获取 搜索栏的推荐
-    def get_search_recommend(self):
+    def get_search_recommend(self) -> dict:
         s = requests.get('https://api.jikipedia.com/wiki/request_search_placeholder').text
         s = json.loads(s)
         return s
 
     # 调用 恶魔鸡翻译器
-    def emoji(self, text):
+    def emoji(self, text) -> str:
         data = {
             'content': str(text)
         }
@@ -88,7 +87,7 @@ class Jikipedia:
         return json.loads(r_p.text)['translation']
 
     # 进行 对词条 （取消）点赞
-    def like(self, id, status=True):
+    def like(self, id: int, status: bool = True) -> int:
         data = {
             'id': id,
             'status': status
@@ -123,7 +122,7 @@ class Jikipedia:
         return r.status_code
 
     # 进行 签到
-    def sign(self):
+    def sign(self) -> bool:
         headers = {
             'Connection': 'keep-alive',
             'sec-ch-ua': '" Not;A Brand";v="99", "Microsoft Edge";v="97", "Chromium";v="97"',
@@ -150,7 +149,7 @@ class Jikipedia:
         return json.loads(r.text)['first']
 
     # 调用 活动-我们的维权API
-    def gather_event_hope(self, count=2000):
+    def gather_event_hope(self, count: int = 2000) -> int:
         payload = {
             "event": "weibo",
             "count": count
@@ -165,13 +164,12 @@ class Jikipedia:
                                  data=json.dumps(payload)).text
         tmp_json = json.loads(tmp_json)
         try:
-            tmp_new_count = tmp_json['count']
-            return tmp_new_count
+            return tmp_json['count']
         except ValueError:
             return 0
 
     # 进行 补签
-    def ssign(self, year, month, day):
+    def ssign(self, year: int, month: int, day: int) -> int:
         headers = {
             'Token': self.get_token(),
             'XID': self.encode_xid(),
@@ -182,3 +180,30 @@ class Jikipedia:
         }
         r = requests.post('https://api.jikipedia.com/wiki/new_check_in', headers=headers, data=json.dumps(data))
         return r.status_code
+
+    # 进行 评论
+    def comment(self, definition: int, text: str, reply: int = 0) -> dict:
+        headers = {
+            'Token': self.get_token(),
+            'XID': self.encode_xid(),
+            'Content-Type': 'application/json;charset=UTF-8'
+        }
+        data = {
+            'content': text,
+            'entity_category': 'definition',
+            'entity_id': definition,
+            'reply_to': reply
+        }
+        r = requests.post('https://api.jikipedia.com/go/create_comment', data=data, headers=headers)
+        return json.loads(r.text)
+
+    # 获取 新增词条数量
+    def jk(self) -> int:
+        headers = {
+            'Token': self.get_token(),
+            'XID': self.encode_xid(),
+            'Content-Type': 'application/json;charset=UTF-8'
+        }
+        data = {}
+        r = requests.post('https://api.jikipedia.com/wiki/cocore_2022_jk_definition_count', data=data, headers=headers)
+        return json.loads(r.text)['count']

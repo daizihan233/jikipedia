@@ -1,5 +1,4 @@
 import random
-
 import requests
 import json
 import base64
@@ -197,3 +196,14 @@ class Jikipedia:
         }
         r = requests.post('https://api.jikipedia.com/go/create_comment', data=data, headers=headers)
         return json.loads(r.text)
+
+    # 获取 新增词条数量
+    def jk(self) -> int:
+        headers = {
+            'Token': self.get_token(),
+            'XID': self.encode_xid(),
+            'Content-Type': 'application/json;charset=UTF-8'
+        }
+        data = {}
+        r = requests.post('https://api.jikipedia.com/wiki/cocore_2022_jk_definition_count', data=data, headers=headers)
+        return json.loads(r.text)['count']

@@ -6,11 +6,10 @@
 [小鸡词典 Jikipedia](https://jikipedia.com/) <br>
 [作者主页 @Bug鸡](https://jikipedia.com/definitions/user/281250396) <br>
 [协助开发 @三滑稽甲苯](https://jikipedia.com/definitions/user/824221130) <br>
-[Github项目](https://github.com/daizihan233/jikipedia) <br>
-[原理分析](https://github.com/daizihan233/jiki-yljj) <br>
+[Github项目 Jikipedia](https://github.com/daizihan233/jikipedia) <br>
 [闲着蛋疼做的网站 www.hantools.top](https://www.hantools.top/) <br>
 
-### 做了些什么？
+### _有什么用？做了什么？还要做什么？_
 #### 互动类
 - [x] 签到
 - [x] 补签
@@ -38,6 +37,7 @@
 #### 活动类
 - [x] 恶魔鸡翻译器
 - [x] 我们的维权
+- [x] 黄狗JK
 ### 食用教程
 #### 安装
 ```
@@ -118,11 +118,9 @@ token = jiki.get_token()
 
 **注意：如果在异地（比如服务器上）挂脚本的话，那么你的机子上登录信息可能会失效**<br>
 <br>
-**解决方法1：服务器也是会累的，把频率调低，让服务器休息一会儿吧！**
-<br><br>
-**解决方法2：在本地跑脚本**
-<br><br>
-**解决方法3：用手机APP**
+**解决方法1：服务器也是会累的，把频率调低，让服务器休息一会儿吧！**<br>
+<br>
+**解决方法2：用手机APP**
 ****
 #### 恶魔鸡翻译器
 ```
@@ -232,7 +230,7 @@ jiki.ssign(year, mouth, day)
 ****
 #### 评论 / 回复
 ```
-jiki.comment(definition, )
+jiki.comment(definition, text, reply)
 ```
 参数：<br>
 
@@ -247,4 +245,48 @@ jiki.comment(definition, )
 | 返回值名称      | 返回值类型 | 可能的值 | 返回值释义          |
 |------------|-------|------|----------------|
 | API返回的json | dict  | -    | 可以自己研究，有时间就写文档 |
+****
+#### 黄狗JK
+~~方便大家观察~~
+```
+jiki.jk()
+```
+参数：<br>
+
+| 参数名称 | 参数类型 | 参数释义 |
+|------|------|------|
+| -    | -    | -    |
+
+返回：<br>
+
+| 返回值名称 | 返回值类型 | 可能的值 | 返回值释义      |
+|-------|-------|------|------------|
+| count | int   | -    | 这个月新增多少词条？ |
+
+**_~~为了让大家更好的观察，这里放出示例代码~~_**<br>
+运行前请保证装有```Python```，并安装了```time``` ```jikipedia``` ```win10toast```，保证系统为```Windows 10及以上```
+```
+import time
+import jikipedia
+from win10toast import ToastNotifier
+# 初始化
+jiki = jikipedia.Jikipedia(phone='12345678910', password='password')  # 这里替换成你的手机号和密码
+count_old = count = jiki.jk()  # 初始化计数器
+print('Init: ')  # 输出调试信息
+print('count =', count)  # 输出调试信息
+print('count_old =', count_old)  # 输出调试信息
+toaster = ToastNotifier()  # 初始化消息提示器
+toaster.show_toast('Jikipedia - 黄狗JK任务监视器', 'Jikipedia is running...', duration=10)  # 显示消息提示器
+# 开始监控
+while True:  # 死循环
+    count = jiki.jk()  # 获取当前数量
+    print('count =', count)  # 输出调试信息
+    if count != count_old:  # 如果当前数量不等于上一次检测的数量
+        print('count({}) != count_old({})'.format(count, count_old))  # 输出调试信息
+        count_old = count  # 更新上一次检测的数量
+        toaster.show_toast('Jikipedia - 黄狗JK任务监视器', 'Now: {}\n'
+                                                    'Old: {}'.format(count, count_old), duration=10)  # 显示消息提示器
+    time.sleep(600)  # 每10分钟（600秒）检测一次，秒为单位，建议把数字调高，否则会经常登录失效
+
+```
 ****
