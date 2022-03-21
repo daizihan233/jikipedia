@@ -270,7 +270,7 @@ import time
 import jikipedia
 from win10toast import ToastNotifier
 # 初始化
-jiki = jikipedia.Jikipedia(phone='13357726438', password='hantools233')  # 这里替换成你的手机号和密码
+jiki = jikipedia.Jikipedia(phone='12345678901', password='password')  # 这里替换成你的手机号和密码
 count_old = count = jiki.jk()  # 初始化计数器
 print('Init: ')  # 输出调试信息
 print('count =', count)  # 输出调试信息

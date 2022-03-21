@@ -62,13 +62,16 @@ class Jikipedia:
         r = requests.post('https://api.jikipedia.com/wiki/phone_password_login',
                           data=data,
                           headers=header)
-        if r.status_code == 412:
-            raise ValueError('手机号码或密码错误')
+        if r.status_code != 200:
+            raise RuntimeError('手机号码或密码错误，请依次检查网络连接、手机号/密码是否正确')
         return json.loads(r.text)
 
     # 获取 Token
     def get_token(self) -> str:
-        return self.login()['token']
+        try:
+            return self.login()['token']
+        except KeyError or ValueError:
+            raise RuntimeError('手机号码或密码错误，请依次检查网络连接、手机号/密码是否正确')
 
     # 获取 搜索栏的推荐
     def get_search_recommend(self) -> dict:
