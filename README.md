@@ -206,9 +206,74 @@ jiki.gather_event_hope(count)
 
 返回：<br>
 
-| 返回值名称 | 返回值类型 | 可能的值 | 返回值释义                                     |
-|-------|-------|------|-------------------------------------------|
-| count | int   | -    | 所有人一共刷了多少，如果返回值为0则代表超出上上限，要等一会再来（大概2-4小时） |
+| 返回值名称 | 返回值类型 | 可能的值 | 返回值释义                                    |
+|-------|-------|------|------------------------------------------|
+| count | int   | -    | 所有人一共刷了多少，如果返回值为0则代表超出上限，要等一会再来（大概2-4小时） |
+
+示例代码：<br>
+```
+"""
+import json
+import time
+import requests
+from jikipedia import Jikipedia
+
+count = 0
+ok = 0
+no = 0
+add = 0
+t_count = 0
+wave_number = 0
+wave_count = 0
+Add_count = 0
+jiki = Jikipedia(phone='11451419198', password='password')  # 改成你的手机号和密码
+while True:
+    try:
+        count += 1
+        print('========================= 第 {} 次请求 ========================='.format(count))
+        tmp_new_count = jiki.gather_event_hope()
+        if tmp_new_count != 0:
+            ok += 1
+            wave_number += 1
+            print('Count :', tmp_new_count)
+            add += tmp_new_count - t_count
+            if t_count == 0:
+                t_count = tmp_new_count
+            t_add = tmp_new_count - t_count
+            print('Add   :', t_add)
+            Add_count += t_add
+            t_count = tmp_new_count
+            print('OK    :', ok)
+            print('NO    :', no)
+            print('AddSum:', add)
+            print("Sleep 1 seconds")
+            time.sleep(1)
+        else:
+            if wave_number:
+                wave_count += 1
+                print('[Jikipedia] 第 {} 波\n'
+                      '本波刷了 {} 次\n'
+                      '刷掉了 {} HP\n'
+                      '共刷掉了 {} HP'.format(wave_count, wave_number, Add_count, add))
+                wave_number = 0
+                Add_count = 0
+            no += 1
+            print('Fuck! count is 0!')
+            print('OK    :', ok)
+            print('NO    :', no)
+            print('AddSum:', add)
+            print('Sleep 1 hours')
+            time.sleep(60*60)
+    except ConnectionError:
+        print('网络连接错误！等待600s后重试')
+        time.sleep(600)
+    except Exception as errmsg:
+        print('[Jikipedia] ElseError\n'
+              '未知的错误\n'
+              'ERROR: {}'.format(errmsg))
+        time.sleep(600)
+
+```
 ****
 #### 补签
 ```
