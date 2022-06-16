@@ -4,33 +4,60 @@ import json
 import base64
 
 
+# 生成 明文XID（纯Python实现）
+def generate_plaintext_xid() -> str:
+    xid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+    xid = [str(x) for x in xid[::-1]]
+    for s in range(len(xid)):
+        if xid[s] == 'x':
+            r = int(random.random() * 16)
+            xid[s] = str(hex(r))[2:]
+        elif xid[s] == 'y':
+            r = int(random.random() * 16)
+            xid[s] = str(hex(3 & r | 8))[2:]
+    return ''.join(xid)[::-1]
+
+
+# 加密 明文XID
+def encode_xid(xid=None) -> str:
+    if xid is None:
+        xid = generate_plaintext_xid()
+    xid = base64.encodebytes(("jikipedia_xid_" + xid).encode('utf-8'))
+    return str(xid.decode('utf-8')).strip('\n')
+
+
+# 获取 搜索栏的推荐
+def get_search_recommend() -> dict:
+    s = requests.get('https://api.jikipedia.com/wiki/request_search_placeholder').text
+    s = json.loads(s)
+    return s
+
+
+# 调用 恶魔鸡翻译器
+def emoji(text) -> str:
+    data = {
+        'content': str(text)
+    }
+    data = json.dumps(data)
+    head = {"Content-Type": "application/json; charset=UTF-8", 'Connection': 'close'}
+    r_p = requests.post(url='https://api.jikipedia.com/go/translate_plaintext', data=data, headers=head)
+    return json.loads(r_p.text)['translation']
+
+
 class Jikipedia:
     # 获取 用户基础信息
-    def __init__(self, phone: str, password: str):
+    def __init__(self, phone, password):
         self.phone = phone
         self.password = password
+        if type(phone) != str:
+            if type(phone) == int:
+                self.phone = str(phone)
+            else:
+                raise TypeError('phone 参数类型错误，应为 str 或 int，而不是 {}'.format(type(phone)))
+        if type(password) != str:
+            raise TypeError('password 参数类型错误，应为 str，而不是 {}'.format(type(password)))
         if len(phone) != 11:
             raise ValueError('手机号码长度不正确')
-
-    # 生成 明文XID（纯Python实现）
-    def generate_plaintext_xid(self) -> str:
-        xid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-        xid = [str(x) for x in xid[::-1]]
-        for s in range(len(xid)):
-            if xid[s] == 'x':
-                r = int(random.random() * 16)
-                xid[s] = str(hex(r))[2:]
-            elif xid[s] == 'y':
-                r = int(random.random() * 16)
-                xid[s] = str(hex(3 & r | 8))[2:]
-        return ''.join(xid)[::-1]
-
-    # 加密 明文XID
-    def encode_xid(self, xid=None) -> str:
-        if xid is None:
-            xid = self.generate_plaintext_xid()
-        xid = base64.encodebytes(("jikipedia_xid_" + xid).encode('utf-8'))
-        return str(xid.decode('utf-8')).strip('\n')
 
     # 模拟登录获取更多信息
     def login(self) -> dict:
@@ -57,7 +84,7 @@ class Jikipedia:
             'Sec-Fetch-Mode': 'no-cors',
             'Sec-Fetch-Site': 'same-site',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0',
-            'XID': self.encode_xid()
+            'XID': encode_xid()
         }
         r = requests.post('https://api.jikipedia.com/wiki/phone_password_login',
                           data=data,
@@ -73,26 +100,10 @@ class Jikipedia:
         except KeyError or ValueError:
             raise RuntimeError('手机号码或密码错误，请依次检查网络连接、手机号/密码是否正确')
 
-    # 获取 搜索栏的推荐
-    def get_search_recommend(self) -> dict:
-        s = requests.get('https://api.jikipedia.com/wiki/request_search_placeholder').text
-        s = json.loads(s)
-        return s
-
-    # 调用 恶魔鸡翻译器
-    def emoji(self, text) -> str:
-        data = {
-            'content': str(text)
-        }
-        data = json.dumps(data)
-        head = {"Content-Type": "application/json; charset=UTF-8", 'Connection': 'close'}
-        r_p = requests.post(url='https://api.jikipedia.com/go/translate_plaintext', data=data, headers=head)
-        return json.loads(r_p.text)['translation']
-
     # 进行 对词条 （取消）点赞
-    def like(self, id: int, status: bool = True) -> int:
+    def like(self, id_: int, status: bool = True) -> int:
         data = {
-            'id': id,
+            'id': id_,
             'status': status
         }
         data = json.dumps(data)
@@ -119,7 +130,7 @@ class Jikipedia:
             'Token': self.get_token(),
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56/H6avzxdHX',
-            'XID': self.encode_xid()
+            'XID': encode_xid()
         }
         r = requests.post('https://api.jikipedia.com/go/set_definition_like', data=data, headers=header)
         return r.status_code
@@ -145,7 +156,7 @@ class Jikipedia:
             'Referer': 'https://jikipedia.com/',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,nl;q=0.5',
         }
-        headers.update({'XID': self.encode_xid(), 'Token': self.get_token()})
+        headers.update({'XID': encode_xid(), 'Token': self.get_token()})
 
         r = requests.post('https://api.jikipedia.com/wiki/new_check_in', headers=headers, data='{}')
 
@@ -159,7 +170,7 @@ class Jikipedia:
         }
         headers = {
             'Connection': 'close',
-            'XID': self.encode_xid(),
+            'XID': encode_xid(),
             'Content-Type': 'application/json;charset=utf-8',
             'Token': self.get_token()
         }
@@ -175,7 +186,7 @@ class Jikipedia:
     def ssign(self, year: int, month: int, day: int) -> int:
         headers = {
             'Token': self.get_token(),
-            'XID': self.encode_xid(),
+            'XID': encode_xid(),
             'Content-Type': 'application/json;charset=UTF-8'
         }
         data = {
@@ -188,7 +199,7 @@ class Jikipedia:
     def comment(self, definition: int, text: str, reply: int = 0) -> dict:
         headers = {
             'Token': self.get_token(),
-            'XID': self.encode_xid(),
+            'XID': encode_xid(),
             'Content-Type': 'application/json;charset=UTF-8'
         }
         data = {
@@ -204,9 +215,69 @@ class Jikipedia:
     def jk(self) -> int:
         headers = {
             'Token': self.get_token(),
-            'XID': self.encode_xid(),
+            'XID': encode_xid(),
             'Content-Type': 'application/json;charset=UTF-8'
         }
         data = {}
         r = requests.post('https://api.jikipedia.com/wiki/cocore_2022_jk_definition_count', data=data, headers=headers)
         return json.loads(r.text)['count']
+
+    # def create_definition(self, text: str, title: str, images: list or None = None, tag_names: list or None = None,
+    #                       expand: dict or None = None, _id: int = 0, references: list or None = None) -> dict:
+    #     raise RuntimeError("您看起来使用了一个未开发完善的函数，这个函数是不可使用的，请等待下一个版本或以后的版本到来！")
+    #     if images is None:
+    #         images = []
+    #     if tag_names is None:
+    #         tag_names = []
+    #     if expand is None:
+    #         expand = []
+    #     if references is None:
+    #         references = []
+    #     headers = {
+    #         'Token': self.get_token(),
+    #         'XID': encode_xid()
+    #     }
+    #     t_images = []
+    #     for i in images:
+    #         print(i)
+    #         if not os.path.exists(i):
+    #             raise FileNotFoundError('文件不存在：{}'.format(i))
+    #         img_data = {
+    #             'category': 'definition'
+    #         }
+    #         files = [('image', (i.replace('\\', '/').split('/')[-1], open(i, 'rb').read()))]
+    #         ret = requests.post('https://api.jikipedia.com/wiki/upload_image', headers=headers, data=img_data, files=files)
+    #         ret = json.loads(ret.text)
+    #         print('ret:', ret)
+    #         t_images.append({'full': ret['full_image'], 'scaled': ret['scaled_image']})
+    #     exit()
+    #     for i in expand:
+    #         ret = requests.post('https://api.jikipedia.com/go/prefill_reference', headers=headers,
+    #                             data={"entity_id": _id, "entity_category": "definition", "path": i})
+    #         ret = json.loads(ret.text)
+    #         if expand[i] is None:
+    #             tl = ret['title']
+    #         else:
+    #             tl = expand[i]
+    #         ic = ret['icon']
+    #         e_data = {"name": "reference_editor",
+    #                   "action": "submit",
+    #                   "path": "/create",
+    #                   "query": "{\"entity_id\":%s,\"entity_category\":\"definition\","
+    #                            "\"path\":\"%s\",\"title\":\"%s\","
+    #                            "\"icon\":{\"path\":\"%s\"}}" % (_id, i, tl, ic),
+    #                   "elapsed": 1139,
+    #                   "xid": self.encode_xid()
+    #                   }
+    #         requests.post('https://api.jikipedia.com/go/save_tracker_point', headers=headers, data=e_data)
+    #     data = {
+    #         'content': text,
+    #         'id': 0,
+    #         'images': [],
+    #         'references': [],
+    #         'tag_names': tag_names,
+    #         'title': title
+    #     }
+    #     r = requests.post('https://api.jikipedia.com/wiki/create_definition', data=data, headers=headers)
+    #     print(r.status_code)
+    #     return json.loads(r.text)

@@ -7,7 +7,6 @@
 [作者主页 @Bug鸡](https://jikipedia.com/definitions/user/281250396) <br>
 [协助开发 @三滑稽甲苯](https://jikipedia.com/definitions/user/824221130) <br>
 [Github项目 Jikipedia](https://github.com/daizihan233/jikipedia) <br>
-[闲着蛋疼做的网站 www.hantools.top](https://www.hantools.top/) <br>
 
 ### _有什么用？做了什么？还要做什么？_
 #### 互动类
@@ -46,12 +45,12 @@ pip install jikipedia
 ****
 #### import
 ```
-from jikipedia import Jikipedia
+import jikipedia
 ```
 ****
 #### 初始化
 ```
-jiki = Jikipedia(phone='12345678901', password='123456')
+jiki = jikipedia.Jikipedia(phone='12345678901', password='123456')
 ```
 参数：<br>
 
@@ -69,7 +68,7 @@ jiki = Jikipedia(phone='12345678901', password='123456')
 #### 生成明文XID
 _感谢 [@三滑稽甲苯](https://jikipedia.com/definitions/user/824221130) 协助逆向_
 ```
-xid = jiki.generate_plaintext_xid()
+xid = generate_plaintext_xid()
 ```
 参数：<br>
 
@@ -85,8 +84,8 @@ xid = jiki.generate_plaintext_xid()
 ****
 #### 生成密文XID
 ```
-xid = jiki.encode_xid()
-xid = jiki.encode_xid(xid)
+xid = encode_xid()
+xid = encode_xid(xid)
 ```
 参数：<br>
 
@@ -116,7 +115,7 @@ token = jiki.get_token()
 |-------|-------|------|----------|
 | token | str   | -    | 获取的Token |
 
-**注意：如果在异地（比如服务器上）挂脚本的话，那么你的机子上登录信息可能会失效**<br>
+**注意：脚本会使登录信息失效**<br>
 <br>
 **解决方法1：服务器也是会累的，把频率调低，让服务器休息一会儿吧！**<br>
 <br>
@@ -124,7 +123,7 @@ token = jiki.get_token()
 ****
 #### 恶魔鸡翻译器
 ```
-jiki.emoji(text)
+emoji(text)
 ```
 参数：<br>
 
@@ -140,8 +139,10 @@ jiki.emoji(text)
 ****
 #### 搜索栏的推荐
 ```
-jiki.get_search_recommend()
+get_search_recommend()
 ```
+**_注：也就是排行榜TOP1的词条_**
+
 参数：<br>
 
 | 参数名称 | 参数类型 | 参数释义 |
@@ -157,13 +158,13 @@ jiki.get_search_recommend()
 ****
 #### 点赞 / 取消点赞
 ```
-jiki.like(id, status)
+jiki.like(id_, status)
 ```
 参数：<br>
 
 | 参数名称   | 参数类型 | 参数释义                       |
 |--------|------|----------------------------|
-| id     | int  | 词条id                       |
+| id_    | int  | 词条id                       |
 | status | bool | True为点赞，False为取消，可选，不填默认点赞 |
 
 返回：<br>
@@ -210,70 +211,7 @@ jiki.gather_event_hope(count)
 |-------|-------|------|------------------------------------------|
 | count | int   | -    | 所有人一共刷了多少，如果返回值为0则代表超出上限，要等一会再来（大概2-4小时） |
 
-示例代码：<br>
-```
-"""
-import json
-import time
-import requests
-from jikipedia import Jikipedia
 
-count = 0
-ok = 0
-no = 0
-add = 0
-t_count = 0
-wave_number = 0
-wave_count = 0
-Add_count = 0
-jiki = Jikipedia(phone='11451419198', password='password')  # 改成你的手机号和密码
-while True:
-    try:
-        count += 1
-        print('========================= 第 {} 次请求 ========================='.format(count))
-        tmp_new_count = jiki.gather_event_hope()
-        if tmp_new_count != 0:
-            ok += 1
-            wave_number += 1
-            print('Count :', tmp_new_count)
-            add += tmp_new_count - t_count
-            if t_count == 0:
-                t_count = tmp_new_count
-            t_add = tmp_new_count - t_count
-            print('Add   :', t_add)
-            Add_count += t_add
-            t_count = tmp_new_count
-            print('OK    :', ok)
-            print('NO    :', no)
-            print('AddSum:', add)
-            print("Sleep 1 seconds")
-            time.sleep(1)
-        else:
-            if wave_number:
-                wave_count += 1
-                print('[Jikipedia] 第 {} 波\n'
-                      '本波刷了 {} 次\n'
-                      '刷掉了 {} HP\n'
-                      '共刷掉了 {} HP'.format(wave_count, wave_number, Add_count, add))
-                wave_number = 0
-                Add_count = 0
-            no += 1
-            print('Fuck! count is 0!')
-            print('OK    :', ok)
-            print('NO    :', no)
-            print('AddSum:', add)
-            print('Sleep 1 hours')
-            time.sleep(60*60)
-    except ConnectionError:
-        print('网络连接错误！等待600s后重试')
-        time.sleep(600)
-    except Exception as errmsg:
-        print('[Jikipedia] ElseError\n'
-              '未知的错误\n'
-              'ERROR: {}'.format(errmsg))
-        time.sleep(600)
-
-```
 ****
 #### 补签
 ```
@@ -312,7 +250,8 @@ jiki.comment(definition, text, reply)
 | API返回的json | dict  | -    | 可以自己研究，有时间就写文档 |
 ****
 #### 黄狗JK
-~~方便大家观察~~
+~~方便大家观察~~<br>
+_**不要看了，请跳过这个功能，因为活动已经结束了，API暴毙时间未知**_
 ```
 jiki.jk()
 ```
@@ -328,30 +267,54 @@ jiki.jk()
 |-------|-------|------|------------|
 | count | int   | -    | 这个月新增多少词条？ |
 
-**_~~为了让大家更好的观察，这里放出示例代码~~_**<br>
-运行前请保证装有```Python```，并安装了```time``` ```jikipedia``` ```win10toast```，保证系统为```Windows 10及以上```
-```
-import time
-import jikipedia
-from win10toast import ToastNotifier
-# 初始化
-jiki = jikipedia.Jikipedia(phone='12345678901', password='password')  # 这里替换成你的手机号和密码
-count_old = count = jiki.jk()  # 初始化计数器
-print('Init: ')  # 输出调试信息
-print('count =', count)  # 输出调试信息
-print('count_old =', count_old)  # 输出调试信息
-toaster = ToastNotifier()  # 初始化消息提示器
-toaster.show_toast('Jikipedia - 黄狗JK任务监视器', 'Jikipedia is running...', duration=10)  # 显示消息提示器
-# 开始监控
-while True:  # 死循环
-    count = jiki.jk()  # 获取当前数量
-    print('count =', count)  # 输出调试信息
-    if count != count_old:  # 如果当前数量不等于上一次检测的数量
-        print('count({}) != count_old({})'.format(count, count_old))  # 输出调试信息
-        toaster.show_toast('Jikipedia - 黄狗JK任务监视器', 'Now: {}\n'
-                                                    'Old: {}'.format(count, count_old), duration=10)  # 显示消息提示器
-        count_old = count  # 更新上一次检测的数量
-    time.sleep(600)  # 每10分钟（600秒）检测一次，秒为单位，建议把数字调高，否则会经常登录失效
+[//]: # (**_~~为了让大家更好地观察，这里放出示例代码~~_**<br>)
 
-```
+[//]: # (运行前请保证装有```Python```，并安装了```time``` ```jikipedia``` ```win10toast```，保证系统为```Windows 10及以上```)
+
+[//]: # (```)
+
+[//]: # (import time)
+
+[//]: # (import jikipedia)
+
+[//]: # (from win10toast import ToastNotifier)
+
+[//]: # (# 初始化)
+
+[//]: # (jiki = jikipedia.Jikipedia&#40;phone='12345678901', password='password'&#41;  # 这里替换成你的手机号和密码)
+
+[//]: # (count_old = count = jiki.jk&#40;&#41;  # 初始化计数器)
+
+[//]: # (print&#40;'Init: '&#41;  # 输出调试信息)
+
+[//]: # (print&#40;'count =', count&#41;  # 输出调试信息)
+
+[//]: # (print&#40;'count_old =', count_old&#41;  # 输出调试信息)
+
+[//]: # (toaster = ToastNotifier&#40;&#41;  # 初始化消息提示器)
+
+[//]: # (toaster.show_toast&#40;'Jikipedia - 黄狗JK任务监视器', 'Jikipedia is running...', duration=10&#41;  # 显示消息提示器)
+
+[//]: # (# 开始监控)
+
+[//]: # (while True:  # 死循环)
+
+[//]: # (    count = jiki.jk&#40;&#41;  # 获取当前数量)
+
+[//]: # (    print&#40;'count =', count&#41;  # 输出调试信息)
+
+[//]: # (    if count != count_old:  # 如果当前数量不等于上一次检测的数量)
+
+[//]: # (        print&#40;'count&#40;{}&#41; != count_old&#40;{}&#41;'.format&#40;count, count_old&#41;&#41;  # 输出调试信息)
+
+[//]: # (        toaster.show_toast&#40;'Jikipedia - 黄狗JK任务监视器', 'Now: {}\n')
+
+[//]: # (                                                    'Old: {}'.format&#40;count, count_old&#41;, duration=10&#41;  # 显示消息提示器)
+
+[//]: # (        count_old = count  # 更新上一次检测的数量)
+
+[//]: # (    time.sleep&#40;600&#41;  # 每10分钟（600秒）检测一次，秒为单位，建议把数字调高，否则会经常登录失效)
+
+[//]: # ()
+[//]: # (```)
 ****
