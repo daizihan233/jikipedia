@@ -1,7 +1,0 @@
-name = "jikipedia"
-version = "0.3.0-Dev"
-description = "帮你调用小鸡词典的 API"
-license = "MIT License"
-authors = "HanTools"
-readme = "README.md"
-repository = "https://github.com/daizihan233/jikipedia"
