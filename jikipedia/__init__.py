@@ -193,8 +193,8 @@ class Jikipedia:
                                             r="dict")
 
     # 获取 热门活动
-    def browse_entities(self):
-        return self._requests_jikipedia_api(u="https://api.jikipedia.com/go/browse_entities",
+    def browse_banners(self):
+        return self._requests_jikipedia_api(u="https://api.jikipedia.com/go/browse_banners",
                                             p={"location": "activity"},
                                             m=requests.post,
                                             r="dict")
