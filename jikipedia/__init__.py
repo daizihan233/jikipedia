@@ -96,26 +96,20 @@ class Jikipedia:
                                          r="dict")['translation']
 
     def _requests_jikipedia_api(self, u: str, p=None, m: requests.post or requests.get = requests.get, r: str = "dict",
-                                has_token: bool = True, has_xid: bool = True):
+                                has_token: bool = True, has_xid: bool = True, dump=True):
         if p is None:
             p = {}
         try:
-            t = m(u, data=json.dumps(p), headers=self.get_header(has_token=has_token, has_xid=has_xid))
+            if dump:
+                t = m(u, data=json.dumps(p), headers=self.get_header(has_token=has_token, has_xid=has_xid))
+            else:
+                t = m(u, data=p, headers=self.get_header(has_token=has_token, has_xid=has_xid))
             if t.status_code == 401:
                 self.token = self.get_token()
                 self.xid = self.encode_xid()
+                return self._requests_jikipedia_api(u, p, m, r, has_token, has_xid, dump)
             elif t.status_code == 412:  # 这里有个Bug，但貌似只能用这个笨办法解决
-                t = m(u, data=p, headers=self.get_header(has_token=has_token, has_xid=has_xid))
-                if t.status_code == 401:
-                    self.token = self.get_token()
-                    self.xid = self.encode_xid()
-                elif 300 > t.status_code >= 200:
-                    if r.upper() == "DICT":
-                        return json.loads(t.text)
-                    elif r.upper() == "OBJ":
-                        return t
-                else:
-                    raise ConnectionError(f"HTTPError: Status_code = {t.status_code}")
+                return self._requests_jikipedia_api(u, p, m, r, has_token, has_xid, not dump)
             elif 300 > t.status_code >= 200:
                 if r.upper() == "DICT":
                     return json.loads(t.text)
@@ -126,7 +120,14 @@ class Jikipedia:
         except ValueError:
             raise ConnectionError(
                 "由于 Python requests 的特色，请关闭你的梯子，不过产生此报错的原因有很多，如有其它问题请提交Issue")
-
+        raise RuntimeError(f'未知的错误！以下信息仅供参考：\n'
+                           f'u = {u}\n'
+                           f'p = {p}\n'
+                           f'm = {m}\n'
+                           f'r = {r}\n'
+                           f'has_token = {has_token}\n'
+                           f'has_xid = {has_xid}\n'
+                           f'status_code = {t.status_code}')
     # 模拟登录获取更多信息
     def login(self) -> dict:
         data = {
