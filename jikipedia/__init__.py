@@ -37,23 +37,18 @@ class Jikipedia:
 
     def get_header(self, has_token: bool = True, has_xid: bool = True, ua: str = random.choice(user_agent_list)):
         header = {
-            'Accept': 'application/json, text/plain, */*',
+            'Accept': 'application/json',
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
             'Cache-Control': 'no-cache',
             'Client': 'web',
-            'Client-Version': '2.6.12k',
             'Connection': 'close',
-            'Content-Length': '30',
             'Content-Type': 'application/json;charset=UTF-8',
-            'Host': 'api.jikipedia.com',
             'Origin': 'https://jikipedia.com',
             'Pragma': 'no-cache',
             'Referer': 'https://jikipedia.com/',
-            'sec-ch-ua': '"Not A;Brand";v="99", "Chromium";v="98", "Microsoft Edge";v="98"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
-            'Sec-Fetch-Dest': 'empty',
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Site': 'same-site',
             'Token': self.token if has_token else '',
@@ -105,15 +100,29 @@ class Jikipedia:
         if p is None:
             p = {}
         try:
-            t = m(u, data=p, headers=self.get_header(has_token=has_token, has_xid=has_xid))
+            t = m(u, data=json.dumps(p), headers=self.get_header(has_token=has_token, has_xid=has_xid))
             if t.status_code == 401:
                 self.token = self.get_token()
                 self.xid = self.encode_xid()
+            elif t.status_code == 412:  # 这里有个Bug，但貌似只能用这个笨办法解决
+                t = m(u, data=p, headers=self.get_header(has_token=has_token, has_xid=has_xid))
+                if t.status_code == 401:
+                    self.token = self.get_token()
+                    self.xid = self.encode_xid()
+                elif 300 > t.status_code >= 200:
+                    if r.upper() == "DICT":
+                        return json.loads(t.text)
+                    elif r.upper() == "OBJ":
+                        return t
+                else:
+                    raise ConnectionError(f"HTTPError: Status_code = {t.status_code}")
             elif 300 > t.status_code >= 200:
                 if r.upper() == "DICT":
                     return json.loads(t.text)
                 elif r.upper() == "OBJ":
                     return t
+            else:
+                raise ConnectionError(f"HTTPError: Status_code = {t.status_code}")
         except ValueError:
             raise ConnectionError(
                 "由于 Python requests 的特色，请关闭你的梯子，不过产生此报错的原因有很多，如有其它问题请提交Issue")
@@ -193,7 +202,7 @@ class Jikipedia:
                                             r="dict")
 
     # 获取 热门活动
-    def browse_banners(self):
+    def browse_banners(self) -> dict:
         return self._requests_jikipedia_api(u="https://api.jikipedia.com/go/browse_banners",
                                             p={"location": "activity"},
                                             m=requests.post,
