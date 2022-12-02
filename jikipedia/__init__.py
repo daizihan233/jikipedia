@@ -17,12 +17,31 @@ user_agent_list = [
     "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.5; en-US; rv:1.9.2.15) Gecko/20110303 Firefox/3.6.15",
 ]
 
+header = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+    'Cache-Control': 'no-cache',
+    'Client': 'web',
+    'Connection': 'close',
+    'Content-Type': 'application/json;charset=UTF-8',
+    'Origin': 'https://jikipedia.com',
+    'Pragma': 'no-cache',
+    'Referer': 'https://jikipedia.com/',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': random.choice(user_agent_list)
+}
+
 
 class Jikipedia:
     # 获取 用户基础信息
-    def __init__(self, phone, password):
+    def __init__(self, phone, password, domain='api.jikipedia.com'):
         self.phone = phone
         self.password = password
+        self.domain = domain
         if type(phone) != str:
             if type(phone) == int:
                 self.phone = str(phone)
@@ -34,28 +53,6 @@ class Jikipedia:
             raise ValueError('手机号码长度不正确')
         self.token = self.get_token()
         self.xid = self.encode_xid()
-
-    def get_header(self, has_token: bool = True, has_xid: bool = True, ua: str = random.choice(user_agent_list)):
-        header = {
-            'Accept': 'application/json',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-            'Cache-Control': 'no-cache',
-            'Client': 'web',
-            'Connection': 'close',
-            'Content-Type': 'application/json;charset=UTF-8',
-            'Origin': 'https://jikipedia.com',
-            'Pragma': 'no-cache',
-            'Referer': 'https://jikipedia.com/',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-site',
-            'Token': self.token if has_token else '',
-            'User-Agent': ua,
-            'XID': self.xid if has_xid else ''
-        }
-        return header
 
     # 生成 明文XID（纯Python实现）
     @staticmethod
@@ -78,12 +75,9 @@ class Jikipedia:
         xid = base64.encodebytes(("jikipedia_xid_" + xid).encode('utf-8'))
         return str(xid.decode('utf-8')).strip('\n')
 
-    # 获取 搜索栏的推荐 【此处改后有Bug，原因未知】
-    @staticmethod
-    def get_search_recommend() -> dict:
-        s = requests.get('https://api.jikipedia.com/wiki/request_search_placeholder').text
-        s = json.loads(s)
-        return s
+    # 获取 搜索栏的推荐
+    def get_search_recommend(self) -> dict:
+        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/request_search_placeholder', m=requests.get, r='dict')
 
     # 调用 恶魔鸡翻译器
     def emoji(self, text) -> str:
@@ -92,7 +86,7 @@ class Jikipedia:
         }
         data = json.dumps(data)
         return \
-            self._requests_jikipedia_api(u='https://api.jikipedia.com/go/translate_plaintext', p=data, m=requests.post,
+            self._requests_jikipedia_api(u=f'https://{self.domain}/go/translate_plaintext', p=data, m=requests.post,
                                          r="dict")['translation']
 
     def _requests_jikipedia_api(self, u: str, p=None, m: requests.post or requests.get = requests.get, r: str = "dict",
@@ -101,9 +95,9 @@ class Jikipedia:
             p = {}
         try:
             if dump:
-                t = m(u, data=json.dumps(p), headers=self.get_header(has_token=has_token, has_xid=has_xid))
+                t = m(u, data=json.dumps(p), headers=header)
             else:
-                t = m(u, data=p, headers=self.get_header(has_token=has_token, has_xid=has_xid))
+                t = m(u, data=p, headers=header)
             if t.status_code == 401:
                 self.token = self.get_token()
                 self.xid = self.encode_xid()
@@ -128,6 +122,7 @@ class Jikipedia:
                            f'has_token = {has_token}\n'
                            f'has_xid = {has_xid}\n'
                            f'status_code = {t.status_code}')
+
     # 模拟登录获取更多信息
     def login(self) -> dict:
         data = {
@@ -135,7 +130,7 @@ class Jikipedia:
             'phone': self.phone
         }
         data = json.dumps(data)
-        r = self._requests_jikipedia_api(u='https://api.jikipedia.com/wiki/phone_password_login',
+        r = self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/phone_password_login',
                                          p=data,
                                          m=requests.post,
                                          r="Obj",
@@ -162,13 +157,13 @@ class Jikipedia:
             'status': status
         }
         data = json.dumps(data)
-        r = self._requests_jikipedia_api(u='https://api.jikipedia.com/go/set_definition_like', p=data, m=requests.post,
+        r = self._requests_jikipedia_api(u=f'https://{self.domain}/go/set_definition_like', p=data, m=requests.post,
                                          r="Obj")
         return r.status_code
 
     # 进行 签到
     def sign(self) -> bool:
-        return self._requests_jikipedia_api(u='https://api.jikipedia.com/wiki/new_check_in', p={}, m=requests.post,
+        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/new_check_in', p={}, m=requests.post,
                                             r="dict")['first']
 
     # 调用 活动-我们的维权API
@@ -180,7 +175,7 @@ class Jikipedia:
 
         try:
             return \
-                self._requests_jikipedia_api(u='https://api.jikipedia.com/go/gather_event_hope', p=payload,
+                self._requests_jikipedia_api(u=f'https://{self.domain}/go/gather_event_hope', p=payload,
                                              m=requests.post,
                                              r="Obj")['count']
         except ValueError:
@@ -191,27 +186,27 @@ class Jikipedia:
         data = {
             'date': '{}-{}-{}'.format(year, month, day)
         }
-        return self._requests_jikipedia_api(u='https://api.jikipedia.com/wiki/new_check_in', m=requests.post,
+        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/new_check_in', m=requests.post,
                                             p=data,
                                             r="Obj").status_code
 
     # 热搜榜获取
     def get_hot(self):
-        return self._requests_jikipedia_api(u="https://api.jikipedia.com/go/get_hot_search",
+        return self._requests_jikipedia_api(u=f"https://{self.domain}/go/get_hot_search",
                                             p={},
                                             m=requests.post,
                                             r="dict")
 
     # 获取 热门活动
     def browse_banners(self) -> dict:
-        return self._requests_jikipedia_api(u="https://api.jikipedia.com/go/browse_banners",
+        return self._requests_jikipedia_api(u=f"https://{self.domain}/go/browse_banners",
                                             p={"location": "activity"},
                                             m=requests.post,
                                             r="dict")
 
     # 获取 首页推荐
     def get_home(self):
-        return self._requests_jikipedia_api(u="https://api.jikipedia.com/go/browse_entities",
+        return self._requests_jikipedia_api(u=f"https://{self.domain}/go/browse_entities",
                                             p={},
                                             m=requests.post,
                                             r="dict")
@@ -225,18 +220,7 @@ class Jikipedia:
             'reply_to': reply
         }
 
-        return self._requests_jikipedia_api(u='https://api.jikipedia.com/wiki/request_search_placeholder',
+        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/request_search_placeholder',
                                             m=requests.post, p=data,
                                             r="dict")
 
-    # 获取 新增词条数量【此处改后有Bug，原因未知】
-    def jk(self) -> int:
-        headers = {
-            'Token': self.get_token(),
-            'XID': self.encode_xid(),
-            'Content-Type': 'application/json;charset=UTF-8'
-        }
-        data = {}
-        r = requests.post('https://api.jikipedia.com/wiki/cocore_2022_jk_definition_count', data=data,
-                          headers=headers)
-        return json.loads(r.text)['count']

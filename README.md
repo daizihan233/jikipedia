@@ -1,4 +1,15 @@
 ## **_jikipedia_**
+### Dev - 开发时
+> 这个检测报告往往指在开发者电脑上开发时（未发布或自用但未发布）的安全性
+> 也意味着下一次上传是 **可能的** 安全性（因为代码可能会因为一些原因有变动，请以生产时为准）
+
+[![OSCS Status](https://www.oscs1024.com/platform/badge/daizihan233/jikipedia-api.git.svg?size=large)](https://www.murphysec.com/dr/Th9ywEPBKMOIL5T8ap)
+
+### Release - 生产时
+> 这个版本是你在 Pypi 上看见的版本，也是你使用的版本
+
+[![OSCS Status](https://www.oscs1024.com/platform/badge/daizihan233/jikipedia.svg?size=large)](https://www.murphysec.com/dr/FON52roiQ5ZNBOITkF)
+
 ### “查网络流行语，就上小鸡词典！” &nbsp;——小鸡词典
 注意：该项目还在开发完善中，有Bug欢迎反馈<br>
 注意：请一定要保持更新，否则会导致某些功能失效
