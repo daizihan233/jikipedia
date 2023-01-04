@@ -38,10 +38,10 @@ header = {
 
 class Jikipedia:
     # 获取 用户基础信息
-    def __init__(self, phone=None, password=None, cookie=None, domain='api.jikipedia.com'):
+    def __init__(self, phone=None, password=None, cookie_user=None, cookie_xid=None, domain='api.jikipedia.com'):
+        self.phone = phone
+        self.password = password
         if phone and password:
-            self.phone = phone
-            self.password = password
             if type(phone) != str:
                 if type(phone) == int:
                     self.phone = str(phone)
@@ -54,9 +54,9 @@ class Jikipedia:
             self.token = self.get_token()
             self.xid = self.encode_xid()
         else:
-            if cookie:
-                self.token = cookie['token']
-                self.xid = cookie['XID']
+            if cookie_user and cookie_xid:
+                self.token = cookie_user['token']
+                self.xid = self.encode_xid(cookie_xid)
             else:
                 raise ValueError("您搁这儿零元购呢？账号密码token全不给你让我怎么登录？？？")
         self.domain = domain
@@ -102,10 +102,15 @@ class Jikipedia:
         if p is None:
             p = {}
         try:
+            cookies = {}
+            headers = header.copy()
+            if has_xid:
+                headers['XID'] = self.xid
+                headers['Token'] = self.token
             if dump:
-                t = m(u, data=json.dumps(p), headers=header)
+                t = m(u, data=json.dumps(p), headers=headers)
             else:
-                t = m(u, data=p, headers=header)
+                t = m(u, data=p, headers=headers)
             if t.status_code == 401:
                 self.token = self.get_token()
                 self.xid = self.encode_xid()
@@ -153,7 +158,7 @@ class Jikipedia:
             raise RuntimeError("因为使用了 cookie 登录所以无法重新登录以自动获取 token")
 
     # 获取 Token
-    def get_token(self) -> str:
+    def get_token(self) -> dict:
         try:
             return self.login()['token']
         except KeyError:
@@ -167,7 +172,6 @@ class Jikipedia:
             'id': id_,
             'status': status
         }
-        data = json.dumps(data)
         r = self._requests_jikipedia_api(u=f'https://{self.domain}/go/set_definition_like', p=data, m=requests.post,
                                          r="Obj")
         return r.status_code
