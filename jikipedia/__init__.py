@@ -38,21 +38,28 @@ header = {
 
 class Jikipedia:
     # 获取 用户基础信息
-    def __init__(self, phone, password, domain='api.jikipedia.com'):
-        self.phone = phone
-        self.password = password
-        self.domain = domain
-        if type(phone) != str:
-            if type(phone) == int:
-                self.phone = str(phone)
+    def __init__(self, phone=None, password=None, cookie=None, domain='api.jikipedia.com'):
+        if phone and password:
+            self.phone = phone
+            self.password = password
+            if type(phone) != str:
+                if type(phone) == int:
+                    self.phone = str(phone)
+                else:
+                    raise TypeError('phone 参数类型错误，应为 str 或 int，而不是 {}'.format(type(phone)))
+            if type(password) != str:
+                raise TypeError('password 参数类型错误，应为 str，而不是 {}'.format(type(password)))
+            if len(phone) != 11:
+                raise ValueError('手机号码长度不正确')
+            self.token = self.get_token()
+            self.xid = self.encode_xid()
+        else:
+            if not cookie:
+                self.token = cookie['token']
+                self.xid = cookie['XID']
             else:
-                raise TypeError('phone 参数类型错误，应为 str 或 int，而不是 {}'.format(type(phone)))
-        if type(password) != str:
-            raise TypeError('password 参数类型错误，应为 str，而不是 {}'.format(type(password)))
-        if len(phone) != 11:
-            raise ValueError('手机号码长度不正确')
-        self.token = self.get_token()
-        self.xid = self.encode_xid()
+                raise ValueError("您搁这儿零元购呢？账号密码token全不给你让我怎么登录？？？")
+        self.domain = domain
 
     # 生成 明文XID（纯Python实现）
     @staticmethod
@@ -77,7 +84,8 @@ class Jikipedia:
 
     # 获取 搜索栏的推荐
     def get_search_recommend(self) -> dict:
-        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/request_search_placeholder', m=requests.get, r='dict')
+        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/request_search_placeholder', m=requests.get,
+                                            r='dict')
 
     # 调用 恶魔鸡翻译器
     def emoji(self, text) -> str:
@@ -125,21 +133,24 @@ class Jikipedia:
 
     # 模拟登录获取更多信息
     def login(self) -> dict:
-        data = {
-            'password': self.password,
-            'phone': self.phone
-        }
-        data = json.dumps(data)
-        r = self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/phone_password_login',
-                                         p=data,
-                                         m=requests.post,
-                                         r="Obj",
-                                         has_token=False,
-                                         has_xid=False)
-        if r.status_code != 200:
-            raise RuntimeError(
-                f'手机号码或密码错误，请依次检查网络连接、手机号/密码是否正确: {json.dumps(json.loads(r.text), indent=4)}')
-        return json.loads(r.text)
+        if self.phone and self.password:
+            data = {
+                'password': self.password,
+                'phone': self.phone
+            }
+            data = json.dumps(data)
+            r = self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/phone_password_login',
+                                             p=data,
+                                             m=requests.post,
+                                             r="Obj",
+                                             has_token=False,
+                                             has_xid=False)
+            if r.status_code != 200:
+                raise RuntimeError(
+                    f'手机号码或密码错误，请依次检查网络连接、手机号/密码是否正确: {json.dumps(json.loads(r.text), indent=4)}')
+            return json.loads(r.text)
+        else:
+            raise RuntimeError("因为使用了 cookie 登录所以无法重新登录以自动获取 token")
 
     # 获取 Token
     def get_token(self) -> str:
@@ -223,4 +234,3 @@ class Jikipedia:
         return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/request_search_placeholder',
                                             m=requests.post, p=data,
                                             r="dict")
-
