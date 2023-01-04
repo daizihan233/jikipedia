@@ -41,6 +41,7 @@ class Jikipedia:
     def __init__(self, phone=None, password=None, cookie_user=None, cookie_xid=None, domain='api.jikipedia.com'):
         self.phone = phone
         self.password = password
+        self.domain = domain
         if phone and password:
             if type(phone) != str:
                 if type(phone) == int:
@@ -59,7 +60,6 @@ class Jikipedia:
                 self.xid = self.encode_xid(cookie_xid)
             else:
                 raise ValueError("您搁这儿零元购呢？账号密码token全不给你让我怎么登录？？？")
-        self.domain = domain
 
     # 生成 明文XID（纯Python实现）
     @staticmethod
@@ -102,7 +102,6 @@ class Jikipedia:
         if p is None:
             p = {}
         try:
-            cookies = {}
             headers = header.copy()
             if has_xid:
                 headers['XID'] = self.xid
