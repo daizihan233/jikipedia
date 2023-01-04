@@ -54,7 +54,7 @@ class Jikipedia:
             self.token = self.get_token()
             self.xid = self.encode_xid()
         else:
-            if not cookie:
+            if cookie:
                 self.token = cookie['token']
                 self.xid = cookie['XID']
             else:
