@@ -84,8 +84,8 @@ class Jikipedia:
 
     # 获取 搜索栏的推荐
     def get_search_recommend(self) -> dict:
-        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/request_search_placeholder', m=requests.get,
-                                            r='dict')
+        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/request_search_placeholder', method=requests.get,
+                                            return_type='dict')
 
     # 调用 恶魔鸡翻译器
     def emoji(self, text) -> str:
@@ -94,32 +94,32 @@ class Jikipedia:
         }
         data = json.dumps(data)
         return \
-            self._requests_jikipedia_api(u=f'https://{self.domain}/go/translate_plaintext', p=data, m=requests.post,
-                                         r="dict")['translation']
+            self._requests_jikipedia_api(url=f'https://{self.domain}/go/translate_plaintext', parameter=data, method=requests.post,
+                                         return_type="dict")['translation']
 
-    def _requests_jikipedia_api(self, u: str, p=None, m: requests.post or requests.get = requests.get, r: str = "dict",
+    def _requests_jikipedia_api(self, url: str, parameter=None, method: requests.post or requests.get = requests.get, return_type: str = "dict",
                                 has_token: bool = True, has_xid: bool = True, dump=True):
-        if p is None:
-            p = {}
+        if parameter is None:
+            parameter = {}
         try:
             headers = header.copy()
             if has_xid:
                 headers['XID'] = self.xid
                 headers['Token'] = self.token
             if dump:
-                t = m(u, data=json.dumps(p), headers=headers)
+                t = method(url, data=json.dumps(parameter), headers=headers)
             else:
-                t = m(u, data=p, headers=headers)
+                t = method(url, data=parameter, headers=headers)
             if t.status_code == 401:
                 self.token = self.get_token()
                 self.xid = self.encode_xid()
-                return self._requests_jikipedia_api(u, p, m, r, has_token, has_xid, dump)
+                return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, dump)
             elif t.status_code == 412:  # 这里有个Bug，但貌似只能用这个笨办法解决
-                return self._requests_jikipedia_api(u, p, m, r, has_token, has_xid, not dump)
+                return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, not dump)
             elif 300 > t.status_code >= 200:
-                if r.upper() == "DICT":
+                if return_type.upper() == "DICT":
                     return json.loads(t.text)
-                elif r.upper() == "OBJ":
+                elif return_type.upper() == "OBJ":
                     return t
             else:
                 raise ConnectionError(f"HTTPError: Status_code = {t.status_code}")
@@ -127,10 +127,10 @@ class Jikipedia:
             raise ConnectionError(
                 "由于 Python requests 的特色，请关闭你的梯子，不过产生此报错的原因有很多，如有其它问题请提交Issue")
         raise RuntimeError(f'未知的错误！以下信息仅供参考：\n'
-                           f'u = {u}\n'
-                           f'p = {p}\n'
-                           f'm = {m}\n'
-                           f'r = {r}\n'
+                           f'url = {url}\n'
+                           f'parameter = {parameter}\n'
+                           f'method = {method}\n'
+                           f'return_type = {return_type}\n'
                            f'has_token = {has_token}\n'
                            f'has_xid = {has_xid}\n'
                            f'status_code = {t.status_code}')
@@ -143,10 +143,10 @@ class Jikipedia:
                 'phone': self.phone
             }
             data = json.dumps(data)
-            r = self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/phone_password_login',
-                                             p=data,
-                                             m=requests.post,
-                                             r="Obj",
+            r = self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/phone_password_login',
+                                             parameter=data,
+                                             method=requests.post,
+                                             return_type="Obj",
                                              has_token=False,
                                              has_xid=False)
             if r.status_code != 200:
@@ -171,14 +171,14 @@ class Jikipedia:
             'id': id_,
             'status': status
         }
-        r = self._requests_jikipedia_api(u=f'https://{self.domain}/go/set_definition_like', p=data, m=requests.post,
-                                         r="Obj")
+        r = self._requests_jikipedia_api(url=f'https://{self.domain}/go/set_definition_like', parameter=data, method=requests.post,
+                                         return_type="Obj")
         return r.status_code
 
     # 进行 签到
     def sign(self) -> bool:
-        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/new_check_in', p={}, m=requests.post,
-                                            r="dict")['first']
+        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', parameter={}, method=requests.post,
+                                            return_type="dict")['first']
 
     # 调用 活动-我们的维权API
     def gather_event_hope(self, count: int = 2000) -> int:
@@ -189,9 +189,9 @@ class Jikipedia:
 
         try:
             return \
-                self._requests_jikipedia_api(u=f'https://{self.domain}/go/gather_event_hope', p=payload,
-                                             m=requests.post,
-                                             r="Obj")['count']
+                self._requests_jikipedia_api(url=f'https://{self.domain}/go/gather_event_hope', parameter=payload,
+                                             method=requests.post,
+                                             return_type="Obj")['count']
         except ValueError:
             return 0
 
@@ -200,30 +200,30 @@ class Jikipedia:
         data = {
             'date': '{}-{}-{}'.format(year, month, day)
         }
-        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/new_check_in', m=requests.post,
-                                            p=data,
-                                            r="Obj").status_code
+        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', method=requests.post,
+                                            parameter=data,
+                                            return_type="Obj").status_code
 
     # 热搜榜获取
     def get_hot(self):
-        return self._requests_jikipedia_api(u=f"https://{self.domain}/go/get_hot_search",
-                                            p={},
-                                            m=requests.post,
-                                            r="dict")
+        return self._requests_jikipedia_api(url=f"https://{self.domain}/go/get_hot_search",
+                                            parameter={},
+                                            method=requests.post,
+                                            return_type="dict")
 
     # 获取 热门活动
     def browse_banners(self) -> dict:
-        return self._requests_jikipedia_api(u=f"https://{self.domain}/go/browse_banners",
-                                            p={"location": "activity"},
-                                            m=requests.post,
-                                            r="dict")
+        return self._requests_jikipedia_api(url=f"https://{self.domain}/go/browse_banners",
+                                            parameter={"location": "activity"},
+                                            method=requests.post,
+                                            return_type="dict")
 
     # 获取 首页推荐
     def get_home(self):
-        return self._requests_jikipedia_api(u=f"https://{self.domain}/go/browse_entities",
-                                            p={},
-                                            m=requests.post,
-                                            r="dict")
+        return self._requests_jikipedia_api(url=f"https://{self.domain}/go/browse_entities",
+                                            parameter={},
+                                            method=requests.post,
+                                            return_type="dict")
 
     # 进行 评论
     def comment(self, definition: int, text: str, reply: int = 0) -> dict:
@@ -234,6 +234,6 @@ class Jikipedia:
             'reply_to': reply
         }
 
-        return self._requests_jikipedia_api(u=f'https://{self.domain}/wiki/request_search_placeholder',
-                                            m=requests.post, p=data,
-                                            r="dict")
+        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/request_search_placeholder',
+                                            method=requests.post, parameter=data,
+                                            return_type="dict")
