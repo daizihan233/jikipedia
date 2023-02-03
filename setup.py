@@ -4,7 +4,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="jikipedia",
-    version="0.5.5-DEV",
+    version="0.5.6-DEV",
     author="HanTools",
     author_email="hantools@foxmail.com",
     description="小鸡词典API",

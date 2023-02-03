@@ -84,7 +84,8 @@ class Jikipedia:
 
     # 获取 搜索栏的推荐
     def get_search_recommend(self) -> dict:
-        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/request_search_placeholder', method=requests.get,
+        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/request_search_placeholder',
+                                            method=requests.get,
                                             return_type='dict')
 
     # 调用 恶魔鸡翻译器
@@ -94,10 +95,12 @@ class Jikipedia:
         }
         data = json.dumps(data)
         return \
-            self._requests_jikipedia_api(url=f'https://{self.domain}/go/translate_plaintext', parameter=data, method=requests.post,
+            self._requests_jikipedia_api(url=f'https://{self.domain}/go/translate_plaintext', parameter=data,
+                                         method=requests.post,
                                          return_type="dict")['translation']
 
-    def _requests_jikipedia_api(self, url: str, parameter=None, method: requests.post or requests.get = requests.get, return_type: str = "dict",
+    def _requests_jikipedia_api(self, url: str, parameter=None, method: requests.post or requests.get = requests.get,
+                                return_type: str = "dict",
                                 has_token: bool = True, has_xid: bool = True, dump=True):
         if parameter is None:
             parameter = {}
@@ -116,6 +119,8 @@ class Jikipedia:
                 return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, dump)
             elif t.status_code == 412:  # 这里有个Bug，但貌似只能用这个笨办法解决
                 return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, not dump)
+            elif t.status_code == 404:
+                raise ConnectionError("呜呜呜…… 这个API不！存！在！")
             elif 500 > t.status_code >= 200:  # 正常返回 2xx 3xx 4xx
                 if return_type.upper() == "DICT":
                     return json.loads(t.text)
@@ -171,14 +176,16 @@ class Jikipedia:
             'id': id_,
             'status': status
         }
-        r = self._requests_jikipedia_api(url=f'https://{self.domain}/go/set_definition_like', parameter=data, method=requests.post,
+        r = self._requests_jikipedia_api(url=f'https://{self.domain}/go/set_definition_like', parameter=data,
+                                         method=requests.post,
                                          return_type="Obj")
         return r.status_code
 
     # 进行 签到
     def sign(self) -> bool:
-        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', parameter={}, method=requests.post,
-                                            return_type="dict")['first']
+        return \
+        self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', parameter={}, method=requests.post,
+                                     return_type="dict")['first']
 
     # 调用 活动-我们的维权API
     def gather_event_hope(self, count: int = 2000) -> int:
@@ -187,12 +194,12 @@ class Jikipedia:
             "count": count
         }
 
-        try:
-            return \
-                self._requests_jikipedia_api(url=f'https://{self.domain}/go/gather_event_hope', parameter=payload,
-                                             method=requests.post,
-                                             return_type="Obj")['count']
-        except ValueError:
+        response = self._requests_jikipedia_api(url=f'https://{self.domain}/go/gather_event_hope', parameter=payload,
+                                                method=requests.post,
+                                                return_type="OBJ")
+        if response.status_code != 400:
+            return response.json()['count']
+        else:
             return 0
 
     # 进行 补签
