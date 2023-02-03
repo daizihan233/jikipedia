@@ -116,7 +116,7 @@ class Jikipedia:
                 return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, dump)
             elif t.status_code == 412:  # 这里有个Bug，但貌似只能用这个笨办法解决
                 return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, not dump)
-            elif 300 > t.status_code >= 200:
+            elif 500 > t.status_code >= 200:
                 if return_type.upper() == "DICT":
                     return json.loads(t.text)
                 elif return_type.upper() == "OBJ":
