@@ -4,7 +4,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="jikipedia",
-    version="0.5.6-DEV",
+    version="0.5.7-DEV",
     author="HanTools",
     author_email="hantools@foxmail.com",
     description="小鸡词典API",
@@ -17,5 +17,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=['requests']
+    install_requires=['requests', 'pycryptodome', 'uuid']
 )

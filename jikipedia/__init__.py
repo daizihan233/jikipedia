@@ -1,47 +1,32 @@
 import random
+
 import requests
 from requests import adapters
 import json
-import base64
+from .xid import encode_xid
 
 adapters.DEFAULT_RETRIES = 5
 
-user_agent_list = [
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) Gecko/20100101 Firefox/61.0",
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36",
-    "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
-    "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.5; en-US; rv:1.9.2.15) Gecko/20110303 Firefox/3.6.15",
-]
-
 header = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-    'Cache-Control': 'no-cache',
-    'Client': 'web',
-    'Connection': 'close',
-    'Content-Type': 'application/json;charset=UTF-8',
-    'Origin': 'https://jikipedia.com',
-    'Pragma': 'no-cache',
-    'Referer': 'https://jikipedia.com/',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'User-Agent': random.choice(user_agent_list)
+    "accept-encoding": "gzip",
+    "client": "app",
+    "client-version": "2.20.39",
+    "content-type": "application/json; charset=utf-8",
+    "host": "api.jikipedia.com",
+    "user-agent": "jikidia_app_google_emu64x_Android_13_33_TE1A.220922.012_d79c2787-e3b6-446d-8d52-edd80a72a414"
 }
 
 
 class Jikipedia:
     # 获取 用户基础信息
-    def __init__(self, phone=None, password=None, cookie_user=None, cookie_xid=None, domain='api.jikipedia.com'):
+    def __init__(self, phone=None, password=None, cookie_user=None, cookie_xid=None, domain='api.jikipedia.com',
+                 xid_api="http://127.0.0.1:3000"):
+        self.session = requests.Session()
         self.phone = phone
         self.password = password
         self.domain = domain
+        self.author_id = None
+        self.xid_api = xid_api  # TODO(daizihan233): 呃呃呃 别问这是个啥，问就是还没开发好（详见第 41 行注释）
         if phone and password:
             if type(phone) != str:
                 if type(phone) == int:
@@ -53,39 +38,21 @@ class Jikipedia:
             if len(phone) != 11:
                 raise ValueError('手机号码长度不正确')
             self.token = self.get_token()
-            self.xid = self.encode_xid()
+            # ! 算法在写了 别催了（除非你能帮我找到 XIDSecret | 这个密钥或许藏在 APK 里，当然鸡典使用的是 Flutter 框架，逆向起来很蓝的啦~）
+            # self.xid = encode_xid(xid_api=xid_api)
+            # ? 鸡典的 XID 算法中，并没有考虑时间和账号因素，所以理论上一个 XID 可以所有账号通用，并且没有时间期限
+            self.xid = "vRUFu93dvOFKGK4PehwZjVO9x6CelYgy2KCkbbeL9lJKlTuV+sMZn43FR/rfIlpBCqW2k7BGzkJmHGOiJ63HY1S0w4TMGd58hFnAKU7OnmbTTAx8S8bJzokn3d9SLJvpNTHbwlKP+IrKhlffIMxTDg=="
         else:
             if cookie_user and cookie_xid:
                 self.token = cookie_user['token']
-                self.xid = self.encode_xid(cookie_xid)
+                self.xid = encode_xid(cookie_xid, xid_api)
             else:
                 raise ValueError("您搁这儿零元购呢？账号密码token全不给你让我怎么登录？？？")
-
-    # 生成 明文XID（纯Python实现）
-    @staticmethod
-    def generate_plaintext_xid() -> str:
-        xid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-        xid = [str(x) for x in xid[::-1]]
-        for s in range(len(xid)):
-            if xid[s] == 'x':
-                r = int(random.random() * 16)
-                xid[s] = str(hex(r))[2:]
-            elif xid[s] == 'y':
-                r = int(random.random() * 16)
-                xid[s] = str(hex(3 & r | 8))[2:]
-        return ''.join(xid)[::-1]
-
-    # 加密 明文XID
-    def encode_xid(self, xid=None) -> str:
-        if xid is None:
-            xid = self.generate_plaintext_xid()
-        xid = base64.encodebytes(("jikipedia_xid_" + xid).encode('utf-8'))
-        return str(xid.decode('utf-8')).strip('\n')
 
     # 获取 搜索栏的推荐
     def get_search_recommend(self) -> dict:
         return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/request_search_placeholder',
-                                            method=requests.get,
+                                            method="GET",
                                             return_type='dict')
 
     # 调用 恶魔鸡翻译器
@@ -96,10 +63,10 @@ class Jikipedia:
         data = json.dumps(data)
         return \
             self._requests_jikipedia_api(url=f'https://{self.domain}/go/translate_plaintext', parameter=data,
-                                         method=requests.post,
+                                         method="POST",
                                          return_type="dict")['translation']
 
-    def _requests_jikipedia_api(self, url: str, parameter=None, method: requests.post or requests.get = requests.get,
+    def _requests_jikipedia_api(self, url: str, parameter=None, method: str = "GET",
                                 return_type: str = "dict",
                                 has_token: bool = True, has_xid: bool = True, dump=True):
         if parameter is None:
@@ -110,12 +77,13 @@ class Jikipedia:
                 headers['XID'] = self.xid
                 headers['Token'] = self.token
             if dump:
-                t = method(url, data=json.dumps(parameter), headers=headers)
+                t = self.session.request(method, url, url, data=json.dumps(parameter), headers=headers)
             else:
-                t = method(url, data=parameter, headers=headers)
+                t = self.session.request(method, url, url, data=parameter, headers=headers)
+
             if t.status_code == 401:
                 self.token = self.get_token()
-                self.xid = self.encode_xid()
+                # self.xid = encode_xid(xid_api=self.xid_api)
                 return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, dump)
             elif t.status_code == 412:  # 这里有个Bug，但貌似只能用这个笨办法解决
                 return self._requests_jikipedia_api(url, parameter, method, return_type, has_token, has_xid, not dump)
@@ -150,10 +118,11 @@ class Jikipedia:
             data = json.dumps(data)
             r = self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/phone_password_login',
                                              parameter=data,
-                                             method=requests.post,
+                                             method="POST",
                                              return_type="Obj",
                                              has_token=False,
                                              has_xid=False)
+            self.author_id = r.json()['id']
             if r.status_code != 200:
                 raise RuntimeError(
                     f'手机号码或密码错误，请依次检查网络连接、手机号/密码是否正确: {json.dumps(json.loads(r.text), indent=4)}')
@@ -177,15 +146,16 @@ class Jikipedia:
             'status': status
         }
         r = self._requests_jikipedia_api(url=f'https://{self.domain}/go/set_definition_like', parameter=data,
-                                         method=requests.post,
+                                         method="POST",
                                          return_type="Obj")
         return r.status_code
 
     # 进行 签到
     def sign(self) -> bool:
         return \
-        self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', parameter={}, method=requests.post,
-                                     return_type="dict")['first']
+            self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', parameter={},
+                                         method="POST",
+                                         return_type="dict")['first']
 
     # 调用 活动-我们的维权API
     def gather_event_hope(self, count: int = 2000) -> int:
@@ -195,7 +165,7 @@ class Jikipedia:
         }
 
         response = self._requests_jikipedia_api(url=f'https://{self.domain}/go/gather_event_hope', parameter=payload,
-                                                method=requests.post,
+                                                method="POST",
                                                 return_type="OBJ")
         if response.status_code != 400:
             return response.json()['count']
@@ -207,7 +177,7 @@ class Jikipedia:
         data = {
             'date': '{}-{}-{}'.format(year, month, day)
         }
-        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', method=requests.post,
+        return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/new_check_in', method="POST",
                                             parameter=data,
                                             return_type="Obj").status_code
 
@@ -215,21 +185,21 @@ class Jikipedia:
     def get_hot(self):
         return self._requests_jikipedia_api(url=f"https://{self.domain}/go/get_hot_search",
                                             parameter={},
-                                            method=requests.post,
+                                            method="POST",
                                             return_type="dict")
 
     # 获取 热门活动
     def browse_banners(self) -> dict:
         return self._requests_jikipedia_api(url=f"https://{self.domain}/go/browse_banners",
                                             parameter={"location": "activity"},
-                                            method=requests.post,
+                                            method="POST",
                                             return_type="dict")
 
     # 获取 首页推荐
     def get_home(self):
         return self._requests_jikipedia_api(url=f"https://{self.domain}/go/browse_entities",
                                             parameter={},
-                                            method=requests.post,
+                                            method="POST",
                                             return_type="dict")
 
     # 进行 评论
@@ -242,5 +212,22 @@ class Jikipedia:
         }
 
         return self._requests_jikipedia_api(url=f'https://{self.domain}/wiki/request_search_placeholder',
-                                            method=requests.post, parameter=data,
+                                            method="POST", parameter=data,
+                                            return_type="dict")
+
+    # 获取 当前用户 / 指定用户 的所有词条
+    def request_created_definition(self, uid: int = None, page: int = 1):
+        if uid is None:
+            uid = self.author_id
+        data = {
+            "author_id": uid,
+            "page": page,
+            "mode": "full",
+            "filter": "normal",
+            "sort_by": "hot",
+            "category": "normal",
+            "include_anonymous": True
+        }
+        return self._requests_jikipedia_api(url=f'https://{self.domain}/go/request_created_definition',
+                                            method="POST", parameter=data,
                                             return_type="dict")
