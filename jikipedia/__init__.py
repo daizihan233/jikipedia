@@ -216,7 +216,7 @@ class Jikipedia:
                                             return_type="dict")
 
     # 获取 当前用户 / 指定用户 的所有词条
-    def request_created_definition(self, uid: int = None, page: int = 1):
+    def request_created_definition(self, uid: int = None, page: int = 1, category: str = "normal"):
         if uid is None:
             uid = self.author_id
         data = {
@@ -225,7 +225,7 @@ class Jikipedia:
             "mode": "full",
             "filter": "normal",
             "sort_by": "hot",
-            "category": "normal",
+            "category": category,
             "include_anonymous": True
         }
         return self._requests_jikipedia_api(url=f'https://{self.domain}/go/request_created_definition',

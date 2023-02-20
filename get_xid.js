@@ -1,6 +1,4 @@
 const CryptoJS = require("crypto-js");
-
-
 const CLIENT = "app"
 const VERSION = "2.20.39"
 const XID_SECRET = ""
@@ -31,6 +29,13 @@ function gen_n(content) {
         mode: CryptoJS.mode.CBC
     })
 }
+let t = gen_key();
+let content = gen_content();
+let n = gen_n(content);
+let c = t.concat(n.ciphertext);
+let data = CryptoJS.enc.Base64.stringify(c);
+console.log("XID:", data)
+
 //调用http的createServer方法 创建一个服务器实例
 const server = http.createServer();
 server.listen(3000, "0.0.0.0", () => console.log('启动了'));
